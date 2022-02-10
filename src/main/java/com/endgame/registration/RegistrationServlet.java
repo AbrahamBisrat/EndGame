@@ -53,10 +53,10 @@ public class RegistrationServlet extends HttpServlet {
 		
 		RequestDispatcher dispatcher = null;
 		
-		out.print(userName + " ");
-		out.print(userEmail + " ");
-		out.print(userPassword + " ");
-		out.print(userPhone + " ");
+//		out.print(userName + " ");
+//		out.print(userEmail + " ");
+//		out.print(userPassword + " ");
+//		out.print(userPhone + " ");
 		
 		String URL = "jdbc:mysql://localhost:3306/EndGameDB";
 		String errorRemover = "?useSSL=false";
@@ -75,7 +75,7 @@ public class RegistrationServlet extends HttpServlet {
 			PreparedStatement pst = conn.prepareStatement(
 				"insert into userInfo(userName, userPassword, userEmail, userPhone)"
 				+ " values(?, ?, ?, ?)"
-			);// ? are placeholders
+			);	// ? are placeholders
 			
 			pst.setString(1, userName);
 			pst.setString(2, userPassword);
@@ -90,11 +90,12 @@ public class RegistrationServlet extends HttpServlet {
 			else {
 				request.setAttribute("status", "failed");
 			}
-			
+			dispatcher.forward(request, response);
 		} catch (Exception e) {
 			out.print("Something went wrong while creating account");
 			out.println("please try again");
 			e.printStackTrace();
+			
 		} finally {
 			try {
 				conn.close();

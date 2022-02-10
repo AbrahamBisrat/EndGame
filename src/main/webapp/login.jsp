@@ -15,6 +15,7 @@
 </head>
 <body>
 
+<input type="hidden" id="status" value="<%= request.getAttribute("status") %>">
 	<div class="main">
 
 		<!-- Sing in  Form -->
@@ -31,7 +32,7 @@
 
 					<div class="signin-form">
 						<h2 class="form-title">Sign In</h2>
-						<form method="" action="" class="register-form"
+						<form method="post" action="login" class="register-form"
 							id="login-form">
 							<div class="form-group">
 								<label for="username"><i
@@ -74,7 +75,16 @@
 	</div>
 
 	<!-- JS -->
-	<script src="vendor/jquery/jquery.min.js"></script>
 	<script src="js/main.js"></script>
+	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+<script type="text/javascript">
+	var status = document.getElementById("status").value;
+	if(status == "success"){
+		swal("Okay", "I will let you in!", "success");
+	} else if(status == "failed"){
+		swal("Hmmm", "Your creds don't seem to be in my records", "failed");
+	}
+</script>
 </body>
 </html>
