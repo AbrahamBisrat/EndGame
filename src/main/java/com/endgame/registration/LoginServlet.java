@@ -44,7 +44,7 @@ public class LoginServlet extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String userEmail = request.getParameter("username");
+		String userName = request.getParameter("username");
 		String userPassword = request.getParameter("password");
 		HttpSession session = request.getSession();
 		Connection conn = null;
@@ -58,30 +58,34 @@ public class LoginServlet extends HttpServlet {
 
 		try {
 			Class.forName(DRIVER);
-			String user = "root";
-			String password = "1234567890";
+			String user = "root";				// This is just horrible
+			String password = "1234567890";		// salt it, hash it, never raw
 			conn = DriverManager.getConnection(URL, user, password);
 			
-			String fetchUser = "select * from EndGameDB.userInfo where userName = ?";// and userPassword = ?";
+			String fetchUser = "select * from EndGameDB.userInfo where userName = ? and userPassword = ?";
 			PreparedStatement pst = conn.prepareStatement(fetchUser);
-			pst.setString(1, "userName");
-			//pst.setString(2, "userPassword");
+			pst.setString(1, userName);
+			pst.setString(2, userPassword);
+			
+			System.out.println("looking for un : \"" + userName
+							  	+ "\" pass: \"" + userPassword +"\"");
+			System.out.println("raw query: " + pst.toString());
 			
 			ResultSet rs = pst.executeQuery();
 			
-			viewDataInResultSet(rs);
+			//scrubbed(userName, userPassword, rs);
 			
-//			if(rs.next()) {
-//				System.out.println("\n\nUser details : " + rs.getString("userName") + "  " 
-//						+ rs.getString("userPassword"));
-//				session.setAttribute("name", rs.getString("userName"));
-//				dispatcher = request.getRequestDispatcher("index.jsp");
-//			} else {
-//				request.setAttribute("status", "failed");
-//				dispatcher = request.getRequestDispatcher("login.jsp");
-//				System.out.println("No data found!");
-////				System.out.println();
-//			}
+			if(rs.next()) {
+				System.out.println("\n\nUser details : " + rs.getString("userName") + "  " 
+						+ rs.getString("userPassword"));
+				session.setAttribute("name", rs.getString("userName"));
+				dispatcher = request.getRequestDispatcher("index.jsp");
+			} else {
+				request.setAttribute("status", "failed");
+				dispatcher = request.getRequestDispatcher("login.jsp");
+				System.out.println("No data found!");
+//				System.out.println();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			dispatcher = request.getRequestDispatcher("login.jsp");
@@ -93,13 +97,50 @@ public class LoginServlet extends HttpServlet {
 				e2.printStackTrace();
 			}
 		}
-		dispatcher = request.getRequestDispatcher("login.jsp");
 		dispatcher.forward(request, response);
+	}
+
+	private void scrubbed(String userName, String userPassword, ResultSet rs) throws SQLException {
+		System.out.println("\nParsing ResultSet object");
+		
+		System.out.println(rs.getString("userName"));
+		System.out.println(rs.getString("userPassword"));
+		viewDataInResultSet(rs); 
+		viewDataInResultSetImproved(rs); 
+		if(userName.equals(rs.getString("userName"))) {
+			System.out.println("User name found!");
+			if(userPassword.equals(rs.getString("userPassword"))) {
+				System.out.println("User password also matches username");
+			}
+		} else {
+			System.out.println("\nNothing from DB matches result!");
+		}
+	}
+
+	private void viewDataInResultSetImproved(ResultSet rs) 
+			throws SQLException {
+		System.out.println("Parsing ResultSet : ");
+		while(rs.next()) {
+			int id_num = rs.getInt("id");
+			String uName = rs.getString("userName");
+			String uPass = rs.getString("userPassword");
+			String uEmail = rs.getString("userEmail");
+			String uPhone = rs.getString("userPhone");
+			System.out.println(id_num + " : "
+					+ uName + " : "
+					+ uPass + " : "
+					+ uEmail + " : "
+					+ uPhone + " : "
+					);
+		}
 	}
 
 	private void viewDataInResultSet(ResultSet rs) throws SQLException {
 		ResultSetMetaData rsmd = (ResultSetMetaData) rs.getMetaData();
 		int columnsNumber = rsmd.getColumnCount();
+		System.out.println("columns : " + columnsNumber 
+				+ " rows : " + rsmd.getFields().toString());
+		
 		if(!rs.next())
 			System.out.println("No data in requested ResultSet.");
 		else {
