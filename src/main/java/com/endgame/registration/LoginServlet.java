@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.mysql.cj.jdbc.result.ResultSetMetaData;
+
 /**
  * Servlet implementation class LoginServlet
  */
@@ -45,9 +47,10 @@ public class LoginServlet extends HttpServlet {
 		String userEmail = request.getParameter("username");
 		String userPassword = request.getParameter("password");
 		HttpSession session = request.getSession();
-		RequestDispatcher dispatcher = null;
 		Connection conn = null;
 		
+		RequestDispatcher dispatcher = null;
+
 		String URL = "jdbc:mysql://localhost:3306/EndGameDB";
 		String errorRemover = "?useSSL=false";
 		URL += errorRemover;
@@ -59,26 +62,29 @@ public class LoginServlet extends HttpServlet {
 			String password = "1234567890";
 			conn = DriverManager.getConnection(URL, user, password);
 			
-			String fetchUser = "select * from EndGameDB.userInfo where userName = ? and userPassword = ?";
+			String fetchUser = "select * from EndGameDB.userInfo where userName = ?";// and userPassword = ?";
 			PreparedStatement pst = conn.prepareStatement(fetchUser);
 			pst.setString(1, "userName");
-			pst.setString(2, "userPassword");
+			//pst.setString(2, "userPassword");
 			
 			ResultSet rs = pst.executeQuery();
 			
-			if(rs.next()) {
-				System.out.println("\n\nUser details : " + rs.getString("userName") + "  " 
-						+ rs.getString("userPassword"));
-				session.setAttribute("name", rs.getString("userName"));
-				dispatcher = request.getRequestDispatcher("index.jsp");
-			} else {
-				request.setAttribute("status", "failed");
-				dispatcher = request.getRequestDispatcher("login.jsp");
-				System.out.println("No data found!");
-//				System.out.println();
-			}
-		} catch (Exception se) {
-			se.printStackTrace();
+			viewDataInResultSet(rs);
+			
+//			if(rs.next()) {
+//				System.out.println("\n\nUser details : " + rs.getString("userName") + "  " 
+//						+ rs.getString("userPassword"));
+//				session.setAttribute("name", rs.getString("userName"));
+//				dispatcher = request.getRequestDispatcher("index.jsp");
+//			} else {
+//				request.setAttribute("status", "failed");
+//				dispatcher = request.getRequestDispatcher("login.jsp");
+//				System.out.println("No data found!");
+////				System.out.println();
+//			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			dispatcher = request.getRequestDispatcher("login.jsp");
 		} finally {
 			try {
 				conn.close();
@@ -87,6 +93,24 @@ public class LoginServlet extends HttpServlet {
 				e2.printStackTrace();
 			}
 		}
+		dispatcher = request.getRequestDispatcher("login.jsp");
 		dispatcher.forward(request, response);
+	}
+
+	private void viewDataInResultSet(ResultSet rs) throws SQLException {
+		ResultSetMetaData rsmd = (ResultSetMetaData) rs.getMetaData();
+		int columnsNumber = rsmd.getColumnCount();
+		if(!rs.next())
+			System.out.println("No data in requested ResultSet.");
+		else {
+			while (rs.next()) {
+			    for (int i = 1; i <= columnsNumber; i++) {
+			        if (i > 1) System.out.print(",  ");
+			        String columnValue = rs.getString(i);
+			        System.out.print(columnValue + " " + rsmd.getColumnName(i));
+			    }
+			    System.out.println("--End of fetch");
+			}
+		}
 	}
 }

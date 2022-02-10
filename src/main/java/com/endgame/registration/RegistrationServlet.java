@@ -75,7 +75,7 @@ public class RegistrationServlet extends HttpServlet {
 			PreparedStatement pst = conn.prepareStatement(
 				"insert into userInfo(userName, userPassword, userEmail, userPhone)"
 				+ " values(?, ?, ?, ?)"
-			);	// ? are placeholders
+			);	// ? -> are place-holders
 			
 			pst.setString(1, userName);
 			pst.setString(2, userPassword);
