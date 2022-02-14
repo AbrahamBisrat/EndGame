@@ -23,7 +23,7 @@ import com.mysql.cj.jdbc.result.ResultSetMetaData;
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+    
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -35,7 +35,8 @@ public class LoginServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		response.getWriter().append("Served at: ").append(request.getContextPath());
 	}
@@ -43,48 +44,49 @@ public class LoginServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		String userName = request.getParameter("username");
 		String userPassword = request.getParameter("password");
 		HttpSession session = request.getSession();
 		Connection conn = null;
 		
 		RequestDispatcher dispatcher = null;
-
+		
 		String URL = "jdbc:mysql://localhost:3306/EndGameDB";
 		String errorRemover = "?useSSL=false";
 		URL += errorRemover;
-		String DRIVER = "com.mysql.cj.jdbc.Driver";
+		String DRIVER = "com.mysql.cj.jdbc.Driver";  // fetch me this class on runtime
 
 		try {
-			Class.forName(DRIVER);
+			Class.forName(DRIVER);			// create a class for Driver on runTime
 			String user = "root";				// This is just horrible
 			String password = "1234567890";		// salt it, hash it, never raw
 			conn = DriverManager.getConnection(URL, user, password);
 			
-			String fetchUser = "select * from EndGameDB.userInfo where userName = ? and userPassword = ?";
+			String fetchUser = "select * from EndGameDB.userInfo "
+					+ "where userName = ? and userPassword = ?";
 			PreparedStatement pst = conn.prepareStatement(fetchUser);
 			pst.setString(1, userName);
 			pst.setString(2, userPassword);
 			
-			System.out.println("looking for un : \"" + userName
-							  	+ "\" pass: \"" + userPassword +"\"");
 			System.out.println("raw query: " + pst.toString());
 			
 			ResultSet rs = pst.executeQuery();
 			
-			//scrubbed(userName, userPassword, rs);
+//			scrubbed(userName, userPassword, rs);
 			
 			if(rs.next()) {
-				System.out.println("\n\nUser details : " + rs.getString("userName") + "  " 
+				System.out.println("\n\nUser details : "
+						+ rs.getString("userName") + "  "
 						+ rs.getString("userPassword"));
+				
 				session.setAttribute("name", rs.getString("userName"));
 				dispatcher = request.getRequestDispatcher("index.jsp");
 			} else {
 				request.setAttribute("status", "failed");
 				dispatcher = request.getRequestDispatcher("login.jsp");
 				System.out.println("No data found!");
-//				System.out.println();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -100,7 +102,9 @@ public class LoginServlet extends HttpServlet {
 		dispatcher.forward(request, response);
 	}
 
-	private void scrubbed(String userName, String userPassword, ResultSet rs) throws SQLException {
+	@SuppressWarnings("unused")
+	private void scrubbed(String userName, String userPassword, ResultSet rs)
+			throws SQLException {
 		System.out.println("\nParsing ResultSet object");
 		
 		System.out.println(rs.getString("userName"));

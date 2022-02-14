@@ -95,7 +95,6 @@ public class RegistrationServlet extends HttpServlet {
 			out.print("Something went wrong while creating account");
 			out.println("please try again");
 			e.printStackTrace();
-			
 		} finally {
 			try {
 				conn.close();

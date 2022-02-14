@@ -83,7 +83,7 @@
 	if(status == "success"){
 		swal("Okay", "I will let you in!", "success");
 	} else if(status == "failed"){
-		swal("Hmmm", "Your creds don't seem to be in my records", "failed");
+		swal("Hmmm", "Your creds don't seem to be in my records", "error");
 	}
 </script>
 </body>
